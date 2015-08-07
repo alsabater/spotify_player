@@ -1,0 +1,96 @@
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+</head>
+<body>
+	<div>
+		<form>
+			<input type="text" id="song" placeholder="Search songs...">
+			<button class="btn btn-warning" id="search">Search!</button>
+		</form>
+	</div>
+
+	<div id="error_search">
+		
+	</div>
+
+	<div class="widget">
+		<div class="header">
+		<!-- Try adding/removing these classes: -->
+		<!-- disabled -->
+		<!-- playing -->
+		<div class="btn-play">
+		</div>
+
+		<div class="metadata">
+		  <p class="title">Hunger of The Pine</p>
+		  <p class="author">alt-J</p>
+
+		  <div class="seekbar">
+		    <progress value="5" max="30"></progress>
+		  </div>
+		</div>
+		</div>
+		<div class="cover">
+		<img src="https://i.scdn.co/image/04da6dfc1f5f45fdeba938a0cc71cf372524fd43">
+		</div>
+
+		<audio class="js-player" src="https://p.scdn.co/mp3-preview/8e9c5ffdc38e91659bfe8b6bd44650dfc25a3d31"></audio>
+	</div>
+
+	<script type="text/javascript">
+		$(document).ready(function(){
+
+			$('#search').on("click", function(event){
+				event.preventDefault();
+				$.ajax({
+
+					url: "https://api.spotify.com/v1/search?type=track&query=" + $('#song').val(),
+					data: '',
+					success: function(search){
+						get_search_result(search);
+						control_music(search);
+						$('.js-player').on('timeupdate', printTime);
+						console.log(object);
+						console.log("success");
+						$('#error_search').empty();
+					},
+					error: function(){
+						console.log("We are here!");
+						$('#error_search').append("There were no results for your search: " + $('#song').val());
+					},
+					dataType: 'json'
+				});
+			});
+
+			function get_search_result(search){
+				object = search.tracks;
+				$('.author').text(search.tracks.items[0].artists[0].name);
+				$('.title').text(search.tracks.items[0].name);
+				$('.cover').append('<img src="' + search.tracks.items[0].album.images[0].url + '">');
+			}
+
+			function control_music(search){
+				$('audio').attr("src", search.tracks.items[0].preview_url);
+				$('.btn-play').on("click", function(){
+					$('.btn-play').toggleClass('playing disabled');
+					if ($('.btn-play').hasClass('playing')){
+						$('.js-player').trigger('play');
+					} else {
+						$('.js-player').trigger('pause');
+					}
+				});
+			};
+
+			function printTime () {
+				var current = $('.js-player').prop('currentTime');
+				$('progress').attr('value', current);
+			}
+		});
+	</script>
+
+</body>
+</html>
